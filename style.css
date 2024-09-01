@@ -1,0 +1,13 @@
+body{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#graph-container{
+  /* background-color: yellow; */
+  width: 100%;
+  min-height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
