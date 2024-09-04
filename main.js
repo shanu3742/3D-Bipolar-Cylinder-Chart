@@ -115,11 +115,37 @@ const data = [
   value:30,
   positive:55,
   negative:45
-  },          
+  },  
+  {
+    name:'Facebook1',
+    value:30,
+    positive:55,
+    negative:45
+    }, 
+    {
+      name:'Facebook2',
+      value:30,
+      positive:55,
+      negative:45
+      },  
+      {
+        name:'Facebook3',
+        value:30,
+        positive:55,
+        negative:45
+        },  
+        {
+          name:'Facebook4',
+          value:30,
+          positive:55,
+          negative:45
+          },   
+    
+           
                
 ]
 const xDomain = data.map((el) => el.name)
-const xScale = d3.scaleBand().domain([...xDomain]).range(xRange)
+const xScale = d3.scaleBand().domain([...xDomain]).range(xRange).padding(0.5)
 // graphContainer.append("g")
 //               .attr("transform", `translate(${startingPointAlongX},${axisStartingPoint})`)
 //               .call(d3.axisBottom(xScale))
@@ -144,54 +170,58 @@ data.forEach((el,i) => {
 
   progressBar.key(`cylinder-${el.name}-i`)
   .select(indicatorContainer)
-  .x(xScale(el.name)+20+xScale.bandwidth()/4)
+  .x(xScale(el.name)+20)
   .y(yscale(el.value))
   .height(containerHeight-20-yscale(el.value))
-  .width(xScale.bandwidth()/2)
+  .width(xScale.bandwidth())
   .positive(el.positive)
   .on('click',() => console.log('second  click '))
   .draw()
 
 console.log(xScale.bandwidth())
-  if(el.value>5 && xScale.bandwidth()>50){
+  if(el.value>5 && xScale.bandwidth()>25){
     indicatorContainer.append('rect')
-    .attr('x',xScale(el.name)+12+xScale.bandwidth()/4)
+    .attr('x',xScale(el.name)+20-(xScale.bandwidth()*0.5*0.2))
     .attr('y',yscale(el.value))
     .attr('height',(((containerHeight-20-yscale(el.value))*el.positive)/100)-2)
     .attr('width','1')
     .attr('fill','#f1addf')
-
+    .attr('class','line')
+    // #f1addf
 
     indicatorContainer.append('rect')
-    .attr('x',xScale(el.name)+12+xScale.bandwidth()/4)
+    .attr('x',xScale(el.name)+20-(xScale.bandwidth()*0.5*0.2))
     .attr('y',(yscale(el.value)+(((containerHeight-20-yscale(el.value))*el.positive)/100))+2)
     .attr('height',(((containerHeight-20-yscale(el.value))*el.negative)/100)-2)
     .attr('width','1')
     .attr('fill','#6B3D83')
+    // #6B3D83
   }else{
     //remove line
   }
  
 
-if(xScale.bandwidth()>38){
+if(xScale.bandwidth()>10){
   // xScale(el.name)-xScale.bandwidth()/4
   indicatorContainer.append("text")
-                .attr("x",xScale.bandwidth()>50?xScale(el.name)+10+xScale.bandwidth()/4:xScale(el.name)+xScale.bandwidth()/2)
+                .attr("x",xScale.bandwidth()>25?xScale(el.name)+20 : xScale(el.name)+xScale.bandwidth())
                 .attr("y",yscale(el.value)+((((containerHeight-20-yscale(el.value))*el.positive)/100)-2)/2)
                 .attr("font-family", "Arial")
                 .attr("font-size",'9')
                 .attr("fill", "#f1addf")
-                .attr('text-anchor',xScale.bandwidth()>50?'end':'middle')
-                .text(`${el.positive}%`);
+                .attr('text-anchor',xScale.bandwidth()>25?'end':'end')
+                .text(`${el.positive}%`)
+                
                 
   indicatorContainer.append("text")
-                .attr("x",xScale.bandwidth()>50?xScale(el.name)+10+xScale.bandwidth()/4:xScale(el.name)+xScale.bandwidth()/2)
+                .attr("x",xScale.bandwidth()>25?xScale(el.name)+20 : xScale(el.name)+xScale.bandwidth())
                 .attr("y",((yscale(el.value)+(((containerHeight-20-yscale(el.value))*el.positive)/100))+2)+((((containerHeight-20-yscale(el.value))*el.negative)/100)-2)/2)
                 .attr("font-family", "Arial")
                 .attr("font-size",'9')
                 .attr("fill", "#6B3D83")
-                .attr('text-anchor',xScale.bandwidth()>50?'end':'middle')
-                .text(`${el.negative}%`);
+                .attr('text-anchor',xScale.bandwidth()>25?'end':'end')
+                .text(`${el.negative}%`)
+                
 }else{
   //remove text
 }
