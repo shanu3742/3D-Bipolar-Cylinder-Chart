@@ -5,38 +5,38 @@ const main = () => {
   const data = [
     {
       name:'TCS',
-      value:20,
+      value:200000,
       user:{
-        female:25,
         male:75,
+        female:25,
       }
     },
     {
       name:'WIPRO',
-      value:20,
+      value:45000,
       user:{
-        female:30,
         male:70,
+        female:30,
        
       }
       
     },
     {
       name:'GOOGLE',
-      value:40,
+      value:65000,
       user:{ 
-        female:80,
         male:20,
+        female:80,
+
       }
      
     },
     {
     name:'Facebook',
-    value:30,
+    value:130000,
     user:{
-     
-      female:45,
       male:55,
+      female:45,
     }
   
     },  
@@ -45,11 +45,12 @@ const main = () => {
   ]
 
 let graphContainer = document.getElementById('graph-container');
-let bipolarGraph =  BipolarGraph.getInstance();
+let bipolarGraph = new  BipolarGraph();
     bipolarGraph.select(graphContainer)
                 .data(data)
                 .width(450)
                 .height(500)
+                .color(['#6B3D83','#f1addf'])
                 .indicatorKey('user')
                 .draw();
 
@@ -57,8 +58,65 @@ let bipolarGraph =  BipolarGraph.getInstance();
 
 
     // setTimeout(() => {
-    //   bipolarGraph.onRemove()
-    // },1000*4)
+    //   bipolarGraph.remove()
+    // },1000*10)
+
+
+
+  //   const data1 = [
+  //     {
+  //       name:'TCS',
+  //       value:200000,
+  //       user:{
+  //         male:30,
+  //         female:70,
+  //       }
+  //     },
+  //     {
+  //       name:'WIPRO',
+  //       value:45000,
+  //       user:{
+  //         male:70,
+  //         female:30,
+         
+  //       }
+        
+  //     },
+  //     {
+  //       name:'GOOGLE',
+  //       value:65000,
+  //       user:{ 
+  //         male:20,
+  //         female:80,
+  
+  //       }
+       
+  //     },
+  //     {
+  //     name:'Facebook',
+  //     value:130000,
+  //     user:{
+  //       male:55,
+  //       female:45,
+  //     }
+    
+  //     },  
+     
+         
+  //   ]
+  
+  // let graphContainer1 = document.getElementById('graph-container-1');
+  // let bipolarGraph1 = new BipolarGraph();
+  //     bipolarGraph1.select(graphContainer1)
+  //                 .data(data1)
+  //                 .width(450)
+  //                 .height(500)
+  //                 .color(['#6B3D83','#f1addf'])
+  //                 .indicatorKey('user')
+  //                 .draw();
+  
+  //     bipolarGraph1.onResize()
+
 }
 
 main()

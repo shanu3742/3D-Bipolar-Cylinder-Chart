@@ -6,6 +6,7 @@ import { generateGroundShadow } from "../component/generateGroundShadow";
 import { indicatorLine } from "../component/indicatorLine";
 import { indicatorText } from "../component/indicatorText";
 import { onTrunct } from "../utils/trunctString";
+import { abbreviateNumber } from "../utils/abbreviate.number";
 import { onScreenResize } from "../system/resize";
 const DEFAULT_MARGIN ={
     left:10,
@@ -33,25 +34,14 @@ class BipolarGraph {
     #indicatorgap=INDICATOR_GAP;
     #legend_config= LEGEND_CONFIG;
     #sizeListner
+    #progressBar
 
-    static #instance = null;
 
 
     constructor(){
-        if(BipolarGraph.#instance){
-            throw new Error("Use MyClass.getInstance() to create an instance.");
-        }
-        BipolarGraph.#instance = this; // Set the instance to prevent further instantiation
         console.log("Instance created.");
     }
 
-    // Public static method to get the instance
-    static getInstance() {
-                if (BipolarGraph.#instance === null) {
-                    BipolarGraph.#instance = new BipolarGraph();
-                }
-                return BipolarGraph.#instance;
-    }
 
     #errorMessage(methodName,errorMessage){
             let message = `${methodName}: `+ errorMessage ?? 'Invalid Value Only Number or String Allow'
@@ -154,13 +144,14 @@ class BipolarGraph {
   const xRange= [startingPointAlongX,axisWidth-startingPointAlongX];
   const xDomain = this.#data.map((el) => el.name)
   const xScale = d3.scaleBand().domain([...xDomain]).range(xRange).paddingInner(0.5).paddingOuter(1).align(0.5)
-  const barGap = xScale.bandwidth()*xScale.paddingInner()
-  const yDomain = [0,d3.max(this.#data,(d) => d.value )]
+  const barGap = xScale.bandwidth()*xScale.paddingInner();
+  const max=d3.max(this.#data,(d) => d.value )
+  const yDomain = [0,max]
   const yRange = [containerHeight-20,0];
   const yscale = d3.scaleLinear().domain(yDomain).range(yRange);
   const bipolar_Indicator_list = Object.keys(this.#data[0][this.#BIPOLAR_KEY]);
  
-  const progressBar = CylinderProgressBar.getInstance();
+  this.#progressBar = new CylinderProgressBar();
   
   this.#data.forEach((el,i) => {
           const indicatorContainer = graphContainer.selectAll(`g#indicator-${i}`)
@@ -168,68 +159,68 @@ class BipolarGraph {
                                       .join('g')
                                       .attr('id',`indicator-${i}`)
   
-          progressBar.key(`cylinder-${el.name}-i`)
+   this.#progressBar.key(`cylinder-${el.name}-${i}`)
                     .select(indicatorContainer)
                     .x(xScale(el.name))
                     .y(yscale(el.value))
-                    .negativeColor(this.#color[0])
-                    .positiveColor(this.#color[1])
+                    .negativeColor(this.#color[1])
+                    .positiveColor(this.#color[0])
                     .height(containerHeight-20-yscale(el.value))
                     .width(xScale.bandwidth())
                     .positive(el[this.#BIPOLAR_KEY][bipolar_Indicator_list[1]])
                     .on('click',() => console.log(`click-${i} `))
                     .draw()
             
-  
-          if(el.value>5 && xScale.bandwidth()>25){
+
+          if(el.value>max*0.05 && xScale.bandwidth()>25){
            indicatorContainer.call(indicatorLine,
-                                    'positive-indicator-line',
+                                    `positive-indicator-line-${i}`,
                                     xScale(el.name)-barGap/2,
                                     yscale(el.value),
                                     (((containerHeight-20-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[1]])/100)-this.#indicatorgap,
-                                    this.#color[0]
+                                    this.#color[1]
                                 )
         
             indicatorContainer.call(indicatorLine,
-                                    'negative-indicator-line',
+                                    `negative-indicator-line-${i}`,
                                     xScale(el.name)-barGap/2,
                                     (yscale(el.value)+(((containerHeight-20-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[1]])/100))+this.#indicatorgap,
                                     (((containerHeight-20-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[0]])/100)-this.#indicatorgap,
-                                    this.#color[1]
+                                    this.#color[0]
                                 )
   
       
           }else{
             //remove line
             
-                svg.selectAll('rect.positive-indicator-line').remove();
-                svg.selectAll('rect.negative-indicator-line').remove();
+                svg.selectAll(`rect.positive-indicator-line-${i}`).remove();
+                svg.selectAll(`rect.negative-indicator-line-${i}`).remove();
             
           }
    
   
-          if(xScale.bandwidth()>18){
+          if(el.value>max*0.05 && xScale.bandwidth()>18){
             // xScale(el.name)-xScale.bandwidth()/4
-            indicatorContainer.call(indicatorText,'positive-indicator-text',
+            indicatorContainer.call(indicatorText,`positive-indicator-text-${i}`,
                                     xScale.bandwidth()>25?xScale(el.name)-barGap/2 : xScale(el.name),
                                     yscale(el.value)+((((containerHeight-20-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[1]])/100)-this.#indicatorgap)/2,
                                     el[this.#BIPOLAR_KEY][bipolar_Indicator_list[1]],
                                     this.#color,
-                                    0
+                                    1
                                 )
 
-            indicatorContainer.call(indicatorText,'negative-indicator-text',
+            indicatorContainer.call(indicatorText,`negative-indicator-text-${i}`,
                                     xScale.bandwidth()>25?xScale(el.name)-barGap/2: xScale(el.name),
                                     ((yscale(el.value)+(((containerHeight-20-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[1]])/100))+this.#indicatorgap)+((((containerHeight-20-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[0]])/100)-this.#indicatorgap)/2,
                                     el[this.#BIPOLAR_KEY][bipolar_Indicator_list[0]],
                                     this.#color,
-                                    1
+                                    0
                                 )
                           
           }else{
             //remove text
-            svg.selectAll('text.positive-indicator-text').remove();
-            svg.selectAll('text.negative-indicator-text').remove();
+            svg.selectAll(`text.positive-indicator-text-${i}`).remove();
+            svg.selectAll(`text.negative-indicator-text-${i}`).remove();
           }
 
         //axis legend
@@ -248,11 +239,11 @@ class BipolarGraph {
         .attr("font-size",'12')
         .attr("fill", "steelblue")
         .attr('transform',`translate(${xScale.bandwidth()/4},0) rotate(70)`)
-        .text(`${onTrunct(el.name.toUpperCase())}:${el.value}`);
+        .text(`${onTrunct(el.name.toUpperCase())}:${abbreviateNumber(el.value)}`);
   
   })
 
-  svg.call(createLegend,legendAlongX,legendAlongY,progressBar,bipolar_Indicator_list,this.#BIPOLAR_KEY,this.#color)
+  svg.call(createLegend,legendAlongX,legendAlongY,this.#progressBar,bipolar_Indicator_list,this.#BIPOLAR_KEY,this.#color)
    
 
   }
@@ -260,13 +251,25 @@ class BipolarGraph {
   onResize=() => {
    this.#sizeListner = onScreenResize(this.#setWidth, this.#fixedWidth)   
 }
-onRemove(){
-    if(this.#svg){
-        this.#svg.remove()
+remove(){
+    if (this.#svg) {
+        this.#svg.remove();
+        this.#svg = null;
     }
-    if(this.#sizeListner){
-        window.removeEventListener(this.#sizeListner)
+    if (this.#sizeListner) {
+        window.removeEventListener('resize', this.#sizeListner);
+        this.#sizeListner = null;
     }
+    this.#fixedWidth=null;
+    this.#margin=null;
+    this.#width=null;
+    this.#height=null;
+    this.#color=null;
+    this.#BIPOLAR_KEY=null;
+    this.#indicatorgap=null;
+    this.#legend_config=null;
+    this.#progressBar.remove();
+    this.#progressBar=null;
 }
 
 }

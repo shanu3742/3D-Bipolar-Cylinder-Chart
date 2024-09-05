@@ -10,23 +10,11 @@ class CylinderProgressBar {
     #negBarCylinder=50;
     #positiveColor='#6B3D83';
     #negativeColor='#f1addf';
-    static #instance = null;
-    
-    
+
     constructor(){
-        if(CylinderProgressBar.#instance){
-            throw new Error("Use MyClass.getInstance() to create an instance.");
-        }
-        CylinderProgressBar.#instance = this; // Set the instance to prevent further instantiation
         console.log("Instance created.");
     }
-    // Public static method to get the instance
-    static getInstance() {
-        if (CylinderProgressBar.#instance === null) {
-            CylinderProgressBar.#instance = new CylinderProgressBar();
-        }
-        return CylinderProgressBar.#instance;
-      }
+    
     
     #errorMessage(methodName,errorMessage){
         let message = `${methodName}: `+ errorMessage ?? 'Invalid Value Only Number or String Allow'
@@ -247,6 +235,22 @@ class CylinderProgressBar {
     getColor(){
         return [this.#positiveColor,this.#negativeColor]
     }
+
+    remove(){
+        if (this.#selection) {
+            this.#selection.selectAll('rect').remove();     
+            this.#selection.selectAll('ellipse').remove();  
+            this.#selection.remove();                      
+            this.#selection = null;                         
+        }
+       
+        this.#posBarCylinder = null;      
+        this.#negBarCylinder = null;     
+        this.#positiveColor = null;
+        this.#negativeColor = null;
+      
+}
+    
     
     }
     

@@ -41,7 +41,7 @@ legendConatiner.selectAll('rect.indicator-label')
 .attr('height',15)
 .attr('width',15)
 .attr('fill',(d,i) => {
-return color[i]
+    return color[i]
 })
 
 legendConatiner.selectAll('text.indicator-label-text')

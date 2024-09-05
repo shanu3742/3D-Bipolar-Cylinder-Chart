@@ -1,8 +1,9 @@
 const onScreenResize = (setProperties,width) => {
-   let sizelistner =  window.addEventListener('resize',() => {
-        const innerWidth= window.innerWidth<width? window.innerWidth-100:width;
-        setProperties(innerWidth)
-      })
+ const sizelistner =  () => {
+    const innerWidth= window.innerWidth<width? window.innerWidth-100:width;
+    setProperties(innerWidth)
+  }
+  window.addEventListener('resize',sizelistner)   
   return  sizelistner
 }
 
