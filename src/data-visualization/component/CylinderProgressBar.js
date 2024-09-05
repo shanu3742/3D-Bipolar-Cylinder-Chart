@@ -244,6 +244,9 @@ class CylinderProgressBar {
         return this;
     }
     
+    getColor(){
+        return [this.#positiveColor,this.#negativeColor]
+    }
     
     }
     
