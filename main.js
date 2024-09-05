@@ -14,7 +14,7 @@ const main = () => {
   const margin = {
     left:10,
     right:10,
-    top:20,
+    top:100,
     bottom:100
   }
 
@@ -48,8 +48,8 @@ const startingPointAlongX=20
 const path= `M${startingPointAlongX} ${containerHeight-groundHeight} L${containerWidth} ${containerHeight-groundHeight} L${containerWidth-startingPointAlongX} ${containerHeight} L${0} ${containerHeight} z`
 
 
-const axisWidth= containerWidth-startingPointAlongX*2;
-const xRange= [0+20,axisWidth-20];
+const axisWidth= containerWidth;
+const xRange= [startingPointAlongX,axisWidth-startingPointAlongX];
 const axisStartingPoint = containerHeight-groundHeight/2;
 
 
@@ -95,68 +95,56 @@ const data = [
   {
     name:'TCS',
     value:20,
-    positive:25,
-    negative:75
+    user:{
+      male:75,
+      female:25
+    }
   },
   {
     name:'WIPRO',
     value:20,
-    positive:70,
-    negative:30
+    user:{
+      male:70,
+      female:30
+    }
+    
   },
   {
     name:'GOOGLE',
     value:40,
-    positive:20,
-    negative:80
+    user:{
+      male:20,
+      female:80
+    }
+   
   },
   {
   name:'Facebook',
   value:30,
-  positive:55,
-  negative:45
+  user:{
+    male:55,
+    female:45
+  }
+
   },  
-  {
-    name:'Facebook1',
-    value:30,
-    positive:55,
-    negative:45
-    }, 
-    {
-      name:'Facebook2',
-      value:30,
-      positive:55,
-      negative:45
-      },  
-      {
-        name:'Facebook3',
-        value:30,
-        positive:55,
-        negative:45
-        },  
-        {
-          name:'Facebook4',
-          value:30,
-          positive:55,
-          negative:45
-          },   
-    
-           
-               
+ 
+     
 ]
 const xDomain = data.map((el) => el.name)
-const xScale = d3.scaleBand().domain([...xDomain]).range(xRange).padding(0.5)
+const xScale = d3.scaleBand().domain([...xDomain]).range(xRange).paddingInner(0.5).paddingOuter(1).align(0.5)
 // graphContainer.append("g")
-//               .attr("transform", `translate(${startingPointAlongX},${axisStartingPoint})`)
+//               .attr("transform", `translate(${0},${axisStartingPoint})`)
 //               .call(d3.axisBottom(xScale))
 
+
+const barGap = xScale.bandwidth()*xScale.paddingInner()
 const yDomain = [0,d3.max(data,(d) => d.value )]
 const yRange = [containerHeight-20,0];
 const yscale = d3.scaleLinear().domain(yDomain).range(yRange)
 
 
 // graphContainer.append("g")
-//               .attr("transform", `translate(${startingPointAlongX+20},${0})`)
+//               .attr("transform", `translate(${startingPointAlongX},${0})`)
 //               .call(d3.axisLeft(yscale))
 
 
@@ -170,29 +158,36 @@ data.forEach((el,i) => {
 
   progressBar.key(`cylinder-${el.name}-i`)
   .select(indicatorContainer)
-  .x(xScale(el.name)+20)
+  .x(xScale(el.name))
   .y(yscale(el.value))
   .height(containerHeight-20-yscale(el.value))
   .width(xScale.bandwidth())
-  .positive(el.positive)
+  .positive(el.user.female)
   .on('click',() => console.log('second  click '))
   .draw()
 
-console.log(xScale.bandwidth())
+
   if(el.value>5 && xScale.bandwidth()>25){
-    indicatorContainer.append('rect')
-    .attr('x',xScale(el.name)+20-(xScale.bandwidth()*0.5*0.2))
+    indicatorContainer.selectAll('rect.positive-indicator-line')
+    .data([1])
+    .join('rect')
+    .attr('class','positive-indicator-line')
+    .attr('x',xScale(el.name)-barGap/2)
     .attr('y',yscale(el.value))
-    .attr('height',(((containerHeight-20-yscale(el.value))*el.positive)/100)-2)
+    .attr('class','positive-indicator-line')
+    .attr('height',(((containerHeight-20-yscale(el.value))*el.user.female)/100)-2)
     .attr('width','1')
     .attr('fill','#f1addf')
-    .attr('class','line')
+    
     // #f1addf
 
-    indicatorContainer.append('rect')
-    .attr('x',xScale(el.name)+20-(xScale.bandwidth()*0.5*0.2))
-    .attr('y',(yscale(el.value)+(((containerHeight-20-yscale(el.value))*el.positive)/100))+2)
-    .attr('height',(((containerHeight-20-yscale(el.value))*el.negative)/100)-2)
+    indicatorContainer.selectAll('rect.negative-indicator-line')
+    .data([1])
+    .join('rect')
+    .attr('class','negative-indicator-line')
+    .attr('x',xScale(el.name)-barGap/2)
+    .attr('y',(yscale(el.value)+(((containerHeight-20-yscale(el.value))*el.user.female)/100))+2)
+    .attr('height',(((containerHeight-20-yscale(el.value))*el.user.male)/100)-2)
     .attr('width','1')
     .attr('fill','#6B3D83')
     // #6B3D83
@@ -201,26 +196,32 @@ console.log(xScale.bandwidth())
   }
  
 
-if(xScale.bandwidth()>10){
+if(xScale.bandwidth()>18){
   // xScale(el.name)-xScale.bandwidth()/4
-  indicatorContainer.append("text")
-                .attr("x",xScale.bandwidth()>25?xScale(el.name)+20 : xScale(el.name)+xScale.bandwidth())
-                .attr("y",yscale(el.value)+((((containerHeight-20-yscale(el.value))*el.positive)/100)-2)/2)
-                .attr("font-family", "Arial")
-                .attr("font-size",'9')
-                .attr("fill", "#f1addf")
-                .attr('text-anchor',xScale.bandwidth()>25?'end':'end')
-                .text(`${el.positive}%`)
+  indicatorContainer.selectAll('text.positive-indicator-text')
+                    .data([1])
+                    .join('text')
+                    .attr("x",xScale.bandwidth()>25?xScale(el.name)-barGap/2 : xScale(el.name))
+                    .attr("y",yscale(el.value)+((((containerHeight-20-yscale(el.value))*el.user.female)/100)-2)/2)
+                    .attr("font-family", "Arial")
+                    .attr("font-size",'9')
+                    .attr("fill", "#f1addf")
+                    .attr('text-anchor',xScale.bandwidth()>25?'end':'end')
+                    .text(`${el.user.female}%`)
+                    .attr('class','positive-indicator-text')
                 
                 
-  indicatorContainer.append("text")
-                .attr("x",xScale.bandwidth()>25?xScale(el.name)+20 : xScale(el.name)+xScale.bandwidth())
-                .attr("y",((yscale(el.value)+(((containerHeight-20-yscale(el.value))*el.positive)/100))+2)+((((containerHeight-20-yscale(el.value))*el.negative)/100)-2)/2)
-                .attr("font-family", "Arial")
-                .attr("font-size",'9')
-                .attr("fill", "#6B3D83")
-                .attr('text-anchor',xScale.bandwidth()>25?'end':'end')
-                .text(`${el.negative}%`)
+  indicatorContainer.selectAll('text.negative-indicator-text')
+                    .data([1])
+                    .join('text')
+                    .attr("x",xScale.bandwidth()>25?xScale(el.name)-barGap/2: xScale(el.name))
+                    .attr("y",((yscale(el.value)+(((containerHeight-20-yscale(el.value))*el.user.female)/100))+2)+((((containerHeight-20-yscale(el.value))*el.user.male)/100)-2)/2)
+                    .attr("font-family", "Arial")
+                    .attr("font-size",'9')
+                    .attr("fill", "#6B3D83")
+                    .attr('text-anchor',xScale.bandwidth()>25?'end':'end')
+                    .text(`${el.user.male}%`)
+                    .attr('class','negative-indicator-text')
                 
 }else{
   //remove text
@@ -235,7 +236,7 @@ const onTrunct  = (string) => {
 }
   // Create text and apply the shadow filter
 graphContainer.append('g')
-.attr('transform',`translate(${xScale(el.name)+20+xScale.bandwidth()/4},${height-margin.bottom})`)
+.attr('transform',`translate(${xScale(el.name)+xScale.bandwidth()/4},${height-margin.bottom})`)
 .append("text")
 .attr("x",0)
 .attr("y",0)
@@ -244,8 +245,78 @@ graphContainer.append('g')
 .attr("fill", "steelblue")
 .attr('transform',`translate(${xScale.bandwidth()/4},0) rotate(70)`)
 .text(`${onTrunct(el.name.toUpperCase())}:${el.value}`);
+
 })
 
+progressBar.key(`cylinder-label`)
+.select(svg)
+.x(10)
+.y(10)
+.height(30)
+.width(15)
+.positive(50)
+.on('click',() => console.log('second  click '))
+.draw()
+
+
+svg.selectAll('text.cylinder-label-text')
+.data([1])
+.join('text')
+.attr('class','cylinder-label-text')
+.attr('x',28)
+.attr('y',25)
+.attr('fill','black')
+.attr("font-family", "Arial")
+.attr("font-size",'12')
+.attr('alignment-baseline','middle')
+.text('Total User')
+
+
+svg.selectAll('rect.positive-label-rect')
+.data([1])
+.join('rect')
+.attr('class','positive-label-rect')
+.attr('x',10)
+.attr('y',45)
+.attr('height',15)
+.attr('width',15)
+.attr('fill','#f1addf')
+
+svg.selectAll('text.positive-label-text')
+.data([1])
+.join('text')
+.attr('class','positive-label-text')
+.attr('x',28)
+.attr('y',55)
+.attr('fill','black')
+.attr("font-family", "Arial")
+.attr("font-size",'12')
+.attr('alignment-baseline','middle')
+.text('Female')
+
+
+
+svg.selectAll('rect.negative-label-rect')
+.data([1])
+.join('rect')
+.attr('class','negative-label-rect')
+.attr('x',10)
+.attr('y',65)
+.attr('height',15)
+.attr('width',15)
+.attr('fill','#6B3D83')
+
+svg.selectAll('text.negative-label-text')
+.data([1])
+.join('text')
+.attr('class','negative-label-text')
+.attr('x',28)
+.attr('y',75)
+.attr('fill','black')
+.attr("font-family", "Arial")
+.attr("font-size",'12')
+.attr('alignment-baseline','middle')
+.text('Male')
 
 }
 
