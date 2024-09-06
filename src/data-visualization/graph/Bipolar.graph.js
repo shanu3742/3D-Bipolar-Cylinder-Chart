@@ -5,9 +5,8 @@ import { CylinderProgressBar } from "../component/CylinderProgressBar";
 import { generateGroundShadow } from "../component/generateGroundShadow";
 import { indicatorLine } from "../component/indicatorLine";
 import { indicatorText } from "../component/indicatorText";
-import { onTrunct } from "../utils/trunctString";
-import { abbreviateNumber } from "../utils/abbreviate.number";
 import { onScreenResize } from "../system/resize";
+import { createAxis } from "../component/createAxis";
 const DEFAULT_MARGIN ={
     left:10,
     right:10,
@@ -193,8 +192,8 @@ class BipolarGraph {
           }else{
             //remove line
             
-                svg.selectAll(`rect.positive-indicator-line-${i}`).remove();
-                svg.selectAll(`rect.negative-indicator-line-${i}`).remove();
+            indicatorContainer.selectAll(`rect.positive-indicator-line-${i}`).remove();
+            indicatorContainer.selectAll(`rect.negative-indicator-line-${i}`).remove();
             
           }
    
@@ -219,30 +218,16 @@ class BipolarGraph {
                           
           }else{
             //remove text
-            svg.selectAll(`text.positive-indicator-text-${i}`).remove();
-            svg.selectAll(`text.negative-indicator-text-${i}`).remove();
+            indicatorContainer.selectAll(`text.positive-indicator-text-${i}`).remove();
+            indicatorContainer.selectAll(`text.negative-indicator-text-${i}`).remove();
           }
 
-        //axis legend
-        graphContainer.selectAll(`g.axis-legend-${i}`)
-        .data(DATA_TO_JOIN)
-        .join('g')
-        .attr('class',`axis-legend-${i}`)
-        .attr('transform',`translate(${xScale(el.name)+xScale.bandwidth()/4},${containerHeight+15})`)
-        .selectAll('text.axis-text')
-        .data(DATA_TO_JOIN)
-        .join("text")
-        .attr('class','axis-text')
-        .attr("x",0)
-        .attr("y",0)
-        .attr("font-family", "Arial")
-        .attr("font-size",'12')
-        .attr("fill", "steelblue")
-        .attr('transform',`translate(${xScale.bandwidth()/4},0) rotate(70)`)
-        .text(`${onTrunct(el.name.toUpperCase())}:${abbreviateNumber(el.value)}`);
+       
   
   })
 
+  //axis legend
+  graphContainer.call(createAxis,this.#data,xScale,containerHeight)
   svg.call(createLegend,legendAlongX,legendAlongY,this.#progressBar,bipolar_Indicator_list,this.#BIPOLAR_KEY,this.#color)
    
 
