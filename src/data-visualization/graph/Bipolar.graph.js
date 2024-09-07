@@ -19,6 +19,9 @@ const DEFAULT_WIDTH=300;
 const DEFAULT_HEIGHT=500;
 const DEFAULT_COLOR= ['#f1addf','#6B3D83'];
 const INDICATOR_GAP=2;
+const GROUND_HEIGHT=40;
+const GROUND_COLOR='#e0e0e0';
+const AXIS_COLOR="steelblue"
 
 class BipolarGraph {
     #svg
@@ -32,8 +35,12 @@ class BipolarGraph {
     #BIPOLAR_KEY;
     #indicatorgap=INDICATOR_GAP;
     #legend_config= LEGEND_CONFIG;
+    #groundHeight=GROUND_HEIGHT;
+    #groundColor=GROUND_COLOR;
+    #axisColor=AXIS_COLOR;
     #sizeListner
     #progressBar
+
 
 
 
@@ -95,7 +102,7 @@ class BipolarGraph {
             this.#BIPOLAR_KEY=key;
              return this
         }else{
-            this.#errorMessage(this.width.name,'indicator key must be string')
+            this.#errorMessage(this.indicatorKey.name,'indicator key must be string')
         }
      
     }
@@ -105,7 +112,7 @@ class BipolarGraph {
             this.#indicatorgap= +gap;
             return this
         }else{
-            this.#errorMessage(this.height.name)
+            this.#errorMessage(this.indicatorLinegap.name)
         }
     }
 
@@ -121,22 +128,52 @@ class BipolarGraph {
         this.draw()
     }
 
+    groundHeight(groundHeight=GROUND_HEIGHT){
+        if(typeof groundHeight  === 'number' || typeof groundHeight === 'string'){
+            this.#groundHeight= +groundHeight;
+            return this
+        }else{
+            this.#errorMessage(this.groundHeight.name)
+        }
+    
+    }
+
+    groundColor(color=GROUND_COLOR){
+        if(typeof color === 'string'){
+            this.#groundColor= color;
+             return this
+        }else{
+            this.#errorMessage(this.groundColor.name,'groundColor must be string')
+        }
+   
+    }
+
+
+    axisColor(color=AXIS_COLOR){
+        if(typeof color === 'string'){
+            this.#axisColor= color;
+             return this
+        }else{
+            this.#errorMessage(this.axisColor.name,'axis color must be string')
+        }
+     
+    }
+
 
   draw(){
     //cretae ground 
-    const groundHeight = 40;
-    const startingPointAlongX=20
+    const startingPointAlongX=this.#groundHeight/2;
     const legendAlongX=this.#legend_config[0];
     const legendAlongY=this.#legend_config[1];
     const containerWidth = this.#width-this.#margin.left-this.#margin.right;
     const containerHeight = this.#height-this.#margin.top-this.#margin.bottom;
 
-    const groundPath= `M${startingPointAlongX} ${containerHeight-groundHeight} L${containerWidth} ${containerHeight-groundHeight} L${containerWidth-startingPointAlongX} ${containerHeight} L${0} ${containerHeight} z`
+    const groundPath= `M${startingPointAlongX} ${containerHeight-this.#groundHeight} L${containerWidth} ${containerHeight-this.#groundHeight} L${containerWidth-startingPointAlongX} ${containerHeight} L${0} ${containerHeight} z`
     let {svg,graphContainer} = createPloatingArea(this.#selection,this.#width,this.#height,this.#margin);
     this.#svg= svg;
     //create ground shadow
     graphContainer.call(generateGroundShadow);
-    graphContainer.call(createGround,groundPath);
+    graphContainer.call(createGround,groundPath,this.#groundColor);
   
   
   const axisWidth= containerWidth;
@@ -146,7 +183,7 @@ class BipolarGraph {
   const barGap = xScale.bandwidth()*xScale.paddingInner();
   const max=d3.max(this.#data,(d) => d.value )
   const yDomain = [0,max]
-  const yRange = [containerHeight-20,0];
+  const yRange = [containerHeight-startingPointAlongX,0];
   const yscale = d3.scaleLinear().domain(yDomain).range(yRange);
   const bipolar_Indicator_list = Object.keys(this.#data[0][this.#BIPOLAR_KEY]);
  
@@ -164,7 +201,7 @@ class BipolarGraph {
                     .y(yscale(el.value))
                     .negativeColor(this.#color[1])
                     .positiveColor(this.#color[0])
-                    .height(containerHeight-20-yscale(el.value))
+                    .height(containerHeight-startingPointAlongX-yscale(el.value))
                     .width(xScale.bandwidth())
                     .positive(el[this.#BIPOLAR_KEY][bipolar_Indicator_list[1]])
                     .on('click',() => console.log(`click-${i} `))
@@ -176,15 +213,15 @@ class BipolarGraph {
                                     `positive-indicator-line-${i}`,
                                     xScale(el.name)-barGap/2,
                                     yscale(el.value),
-                                    (((containerHeight-20-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[1]])/100)-this.#indicatorgap,
+                                    (((containerHeight-startingPointAlongX-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[1]])/100)-this.#indicatorgap,
                                     this.#color[1]
                                 )
         
             indicatorContainer.call(indicatorLine,
                                     `negative-indicator-line-${i}`,
                                     xScale(el.name)-barGap/2,
-                                    (yscale(el.value)+(((containerHeight-20-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[1]])/100))+this.#indicatorgap,
-                                    (((containerHeight-20-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[0]])/100)-this.#indicatorgap,
+                                    (yscale(el.value)+(((containerHeight-startingPointAlongX-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[1]])/100))+this.#indicatorgap,
+                                    (((containerHeight-startingPointAlongX-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[0]])/100)-this.#indicatorgap,
                                     this.#color[0]
                                 )
   
@@ -202,7 +239,7 @@ class BipolarGraph {
             // xScale(el.name)-xScale.bandwidth()/4
             indicatorContainer.call(indicatorText,`positive-indicator-text-${i}`,
                                     xScale.bandwidth()>25?xScale(el.name)-barGap/2 : xScale(el.name),
-                                    yscale(el.value)+((((containerHeight-20-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[1]])/100)-this.#indicatorgap)/2,
+                                    yscale(el.value)+((((containerHeight-startingPointAlongX-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[1]])/100)-this.#indicatorgap)/2,
                                     el[this.#BIPOLAR_KEY][bipolar_Indicator_list[1]],
                                     this.#color,
                                     1
@@ -210,7 +247,7 @@ class BipolarGraph {
 
             indicatorContainer.call(indicatorText,`negative-indicator-text-${i}`,
                                     xScale.bandwidth()>25?xScale(el.name)-barGap/2: xScale(el.name),
-                                    ((yscale(el.value)+(((containerHeight-20-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[1]])/100))+this.#indicatorgap)+((((containerHeight-20-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[0]])/100)-this.#indicatorgap)/2,
+                                    ((yscale(el.value)+(((containerHeight-startingPointAlongX-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[1]])/100))+this.#indicatorgap)+((((containerHeight-startingPointAlongX-yscale(el.value))*el[this.#BIPOLAR_KEY][bipolar_Indicator_list[0]])/100)-this.#indicatorgap)/2,
                                     el[this.#BIPOLAR_KEY][bipolar_Indicator_list[0]],
                                     this.#color,
                                     0
@@ -227,7 +264,7 @@ class BipolarGraph {
   })
 
   //axis legend
-  graphContainer.call(createAxis,this.#data,xScale,containerHeight)
+  graphContainer.call(createAxis,this.#data,xScale,containerHeight,this.#axisColor)
   svg.call(createLegend,legendAlongX,legendAlongY,this.#progressBar,bipolar_Indicator_list,this.#BIPOLAR_KEY,this.#color)
    
 
